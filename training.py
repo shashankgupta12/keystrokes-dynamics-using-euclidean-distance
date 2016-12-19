@@ -1,6 +1,7 @@
 import pymongo
 import statistics
 import numpy
+import matplotlib.pyplot as plt
 
 def databaseConnect():
 	try:
@@ -37,10 +38,20 @@ def databaseConnect():
 					userprofile.append(dic2)
 
 				dissimilarity = []
+				major_dwell = []
+				major_latency = []
+				for dic in majorprofile:
+					major_dwell.append(dic["dwell"])
+					major_latency.append(dic["latency"])
+				plt.figure(1)
+				plt.plot(major_dwell,major_latency)
+
 				for i in range(len(userprofile[index]["dwell"])):
 					#the above loop keeps in mind that there is only one richa 
 					#type word typed in the training data as in there is only one
 					#word where 'i' follows 'r', 'c' follows 'i', and so on 
+					user_dwell = []
+					user_latency = []
 					for index in range(len(keys) - 1):
 						dissimilarity_list = []	
 						masterDwell = masterprofile[index]["dwell"]
@@ -48,11 +59,16 @@ def databaseConnect():
 						a = numpy.array(masterDwell,masterLatency)
 						dw = userprofile[index]["dwell"][i]
 						la = userprofile[index]["latency"][i]
+						user_dwell.append(dw)
+						user_latency.append(la)
 						b = numpy.array(dw,la)
 						dist = numpy.linalg.norm(a - b)
 						dissimilarity_list.append(dist)
 					dissimilarity.append(sum(dissimilarity_list))
-
+					plt.figure(1)
+					plt.plot(user_dwell,user_latency)
+				
+				plt.show()	
 				stdev_dissimilarity = statistics.stdev()
 				mean_dissimilarity = statistics.mean()
 				SIGMA = 3.00
