@@ -1,78 +1,78 @@
 import pymongo
+from pymongo import MongoClient
 import statistics
 import numpy
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def databaseConnect():
 	try:
-		conn = pymongo.MongoClient()
-		db = conn["database_name"]
-		for collection in db.collection_names():
-			if collection == "system.indexes":
-				continue
-			else:
-				masterprofile = []
-				userprofile= []
-				keys = list(collection)
-				for index in range(len(keys) - 1):
-					documents = collection.find({"sourceKey":keys[index],"targetKey":keys[index+1]})
-					flightTime = []
-					dwellTime = []
-					latencyTime = []
-					dic1 = {}
-					dic2 = {}
-					for document in documents:
-						flightTime.append(docuument["calculations"]["fightTime"])
-						dwellTime.append(docuument["calculations"]["dwellTime"])
-						latencyTime.append(docuument["calculations"]["latencyTime"])
-						for index,item in enumerate(dwellTime):
-							dwellTime[index] = item/1000
-						for index,item in enumerate(latencyTime):
-							latencyTime[index] = item/1000
-					dic1["dwell"] = statistics.mean(dwellTime)
-					dic1["latency"] = statistics.mean(latencyTime)
-					masterprofile.append(dic1)
-					# dic2["keyCombination"] = "{0}{1}".format(keys[index],keys[index+1])
-					dic2["dwell"] = dwellTime
-					dic2["latency"] = latencyTime
-					userprofile.append(dic2)
+		client = MongoClient('localhost', 27017)
+		db = conn.pressKeyData
+		collection = db.users
 
-				dissimilarity = []
-				major_dwell = []
-				major_latency = []
-				for dic in majorprofile:
-					major_dwell.append(dic["dwell"])
-					major_latency.append(dic["latency"])
-				plt.figure(1)
-				plt.plot(major_dwell,major_latency)
+		masterprofile = []
+		userprofile= []
+		keys = list("the day gives us most happiness")
+		# keys = list(collection)
+		for index in range(len(keys) - 1):
+			documents = collection.find({"sourceKey":keys[index],"targetKey":keys[index+1]})
+			flightTime = []
+			dwellTime = []
+			latencyTime = []
+			dic1 = {}
+			dic2 = {}
+			for document in documents:
+				flightTime.append(docuument["calculations"]["fightTime"])
+				dwellTime.append(docuument["calculations"]["dwellTime"])
+				latencyTime.append(docuument["calculations"]["latencyTime"])
+				for index,item in enumerate(dwellTime):
+					dwellTime[index] = item/1000
+				for index,item in enumerate(latencyTime):
+					latencyTime[index] = item/1000
+			dic1["dwell"] = statistics.mean(dwellTime)
+			dic1["latency"] = statistics.mean(latencyTime)
+			masterprofile.append(dic1)
+			# dic2["keyCombination"] = "{0}{1}".format(keys[index],keys[index+1])
+			dic2["dwell"] = dwellTime
+			dic2["latency"] = latencyTime
+			userprofile.append(dic2)
 
-				for i in range(len(userprofile[index]["dwell"])):
-					#the above loop keeps in mind that there is only one richa 
-					#type word typed in the training data as in there is only one
-					#word where 'i' follows 'r', 'c' follows 'i', and so on 
-					user_dwell = []
-					user_latency = []
-					for index in range(len(keys) - 1):
-						dissimilarity_list = []	
-						masterDwell = masterprofile[index]["dwell"]
-						masterLatency = masterprofile[index]["latency"]
-						a = numpy.array(masterDwell,masterLatency)
-						dw = userprofile[index]["dwell"][i]
-						la = userprofile[index]["latency"][i]
-						user_dwell.append(dw)
-						user_latency.append(la)
-						b = numpy.array(dw,la)
-						dist = numpy.linalg.norm(a - b)
-						dissimilarity_list.append(dist)
-					dissimilarity.append(sum(dissimilarity_list))
-					plt.figure(1)
-					plt.plot(user_dwell,user_latency)
-				
-				plt.show()	
-				stdev_dissimilarity = statistics.stdev()
-				mean_dissimilarity = statistics.mean()
-				SIGMA = 3.00
-				comparator = mean_dissimilarity + (SIGMA * stdev_dissimilarity)
+		dissimilarity = []
+		major_dwell = []
+		major_latency = []
+		for dic in majorprofile:
+			major_dwell.append(dic["dwell"])
+			major_latency.append(dic["latency"])
+		# plt.figure(1)
+		# plt.plot(major_dwell,major_latency)
+
+		for i in range(len(userprofile[index]["dwell"])):
+			#the above loop keeps in mind that there is only one richa 
+			#type word typed in the training data as in there is only one
+			#word where 'i' follows 'r', 'c' follows 'i', and so on 
+			user_dwell = []
+			user_latency = []
+			for index in range(len(keys) - 1):
+				dissimilarity_list = []	
+				masterDwell = masterprofile[index]["dwell"]
+				masterLatency = masterprofile[index]["latency"]
+				a = numpy.array(masterDwell,masterLatency)
+				dw = userprofile[index]["dwell"][i]
+				la = userprofile[index]["latency"][i]
+				user_dwell.append(dw)
+				user_latency.append(la)
+				b = numpy.array(dw,la)
+				dist = numpy.linalg.norm(a - b)
+				dissimilarity_list.append(dist)
+			dissimilarity.append(sum(dissimilarity_list))
+		# 	plt.figure(1)
+		# 	plt.plot(user_dwell,user_latency)
+		
+		# plt.show()	
+		stdev_dissimilarity = statistics.stdev()
+		mean_dissimilarity = statistics.mean()
+		SIGMA = 3.00
+		comparator = mean_dissimilarity + (SIGMA * stdev_dissimilarity)
 
 	except pymongo.errors.ConnectionFailure, e:
 		error_text = "Error: {0}".format(e)
