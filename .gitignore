@@ -1,2 +1,4 @@
-mongodb/
+bin/
+lib/
+pip-selfcheck.json
 plot.py
