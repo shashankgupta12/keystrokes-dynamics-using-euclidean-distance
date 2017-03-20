@@ -1,11 +1,12 @@
 from pynput.keyboard import Key, Listener
 from datetime import datetime
+from dataprocess import dataProcess
 
 keyPressData = []
 keyReleaseData = []
 dataset = []
 
-def on_press(key):
+def onPress(key):
     t = datetime.now()
     # print("p-{0}".format(key))
     if not key == Key.enter:
@@ -14,7 +15,7 @@ def on_press(key):
     # if key == Key.enter:
     #     return False
 
-def on_release(key):
+def onRelease(key):
     t = datetime.now()
     # print("r-{0}".format(key))
     if key == Key.enter:
@@ -31,9 +32,11 @@ def dataCollect():
     for entry in range(10):
         print("Dataset_{0}".format(entry + 1))
         # print('start')
-        with Listener(on_press=on_press, on_release=on_release) as listener:
+        with Listener(on_press=onPress, on_release=onRelease) as listener:
             listener.join()
-        dataset.append((keyPressData, keyReleaseData))
+        # keyPressData = dataProcess(keyPressData) 
+        # keyReleaseData = dataProcess(keyReleaseData)
+        dataset.append((dataProcess(keyPressData), dataProcess(keyReleaseData)))
         keyPressData = []
         keyReleaseData = []
 
