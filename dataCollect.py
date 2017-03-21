@@ -1,10 +1,20 @@
 from pynput.keyboard import Key, Listener
 from datetime import datetime
-from dataprocess import dataProcess
+import json
+from dataprocess import dataProcess, extractTimings
 
 keyPressData = []
 keyReleaseData = []
 dataset = []
+
+def processAndStore(keyPressData, keyReleaseData):
+    keyPressData, keyReleaseData = extractTimings(dataProcess(keyPressData), dataProcess(keyReleaseData))
+    # create json file; since this a static model and text is always same
+    # therefore it is not added to the json object
+    data = dict(keyPressData=keyPressData, keyReleaseData=keyReleaseData)
+    with open('data.json', 'a') as f:
+        json.dump(data, f) 
+    dataset.append((keyPressData, keyReleaseData))
 
 def onPress(key):
     t = datetime.now()
@@ -28,15 +38,15 @@ def dataCollect():
     global keyPressData
     global keyReleaseData
     # text = input("Enter training text: ")
-    print("Enter name 10 times:")
+    text = 'shashank'
+    print("Enter {0} 10 times:".format(text))
     for entry in range(10):
         print("Dataset_{0}".format(entry + 1))
-        # print('start')
+        
         with Listener(on_press=onPress, on_release=onRelease) as listener:
             listener.join()
-        # keyPressData = dataProcess(keyPressData) 
-        # keyReleaseData = dataProcess(keyReleaseData)
-        dataset.append((dataProcess(keyPressData), dataProcess(keyReleaseData)))
+        
+        processAndStore(keyPressData, keyReleaseData)
         keyPressData = []
         keyReleaseData = []
 
