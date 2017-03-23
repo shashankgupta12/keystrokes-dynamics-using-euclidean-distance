@@ -3,3 +3,4 @@ lib/
 __pycache__/
 pip-selfcheck.json
 data.json
+plot.png

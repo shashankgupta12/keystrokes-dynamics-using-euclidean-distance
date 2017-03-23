@@ -1,64 +1,48 @@
-import pymongo
-from pymongo import MongoClient
-from training import produceComparator
-# import training
-import statistics
-import ctypes
-from tkMessageBox import *
+from pynput.keyboard import Key, Listener
+from datetime import datetime
+from dataprocess import dataProcess, extractTimings
+from calculatetimings import calculateLatencyTime, calculateInterkeyTime
+from training import generateComparator, produceMasterProfile
 
-comp = produceComparator()
-comparator = comp[len(comp) - 1]
-masterprofile = comp[:-1]
+pressdata = []
+releasedata = []
 
-def verifyUser():
-	try:
-		client = MongoClient('localhost', 27017)
-		db = client.pressKeyData
-		#change database name here
-		print "Database name: {0}".format(db)
-		collection = db.users
-		#change collection name here if required
-		print "Collection name: {0}".format(collection)
-		userprofile = []
-		dic = {}
-		keys = list("rana happy")
-		# print keys
-		for index in list(range(10))[::2]:
-			'''check indexing range here'''
-			document = collection.find_one({"sourceKey":keys[index],"targetKey":keys[index+1]})
-			flightTime = 
-			dwellTime = 
-			latencyTime = 
-			dwellTime /= 1000.0
-			latencyTime /= 1000.0
-			print latencyTime
-			print dwellTime
-			dic["dwell"] = dwellTime
-			dic["latency"] = latencyTime
-			userprofile.append(dic)
+def authenticate():
+	dp, dr = extractTimings(dataProcess(pressdata), dataProcess(releasedata))
+	lt = calculateLatencyTime(dp, dr)
+	ikt = calculateInterkeyTime(dp, dr)
+	# master_lt = []
+	# master_ikt = []
+	master_lt, master_ikt = produceMasterProfile()
 
-		print userprofile
-		dissimilarity_list = []
-		for dic1,dic2 in zip(userprofile,masterprofile):
-			dw = dic1["dwell"]
-			la = dic1["latency"]
-			md = dic2["dwell"]
-			ml = dic2["latency"]
-			dist = ((((md - dw)**2) + ((ml - la)**2))**(1/2))
-			print dist
-			dissimilarity_list.append(dist)
-		print dissimilarity_list
-		dissimilarity = sum(dissimilarity_list)
-		print dissimilarity
-		authentication_value = 0 if dissimilarity > comparator else 1
-		print authentication_value
-		if authentication_value == 1:
-			showerror("User Authentication", "Legitimate User")
-		elif authentication_value == 0:
-			showerror("User Authentication", "Fake User")
 
-	except pymongo.errors.ConnectionFailure, e:
-		error_text = "Error: {0}".format(e)
-		print(error_text)
+	euclideanDistance = [((x1 - x2)**2 + (y1 - y2)**2)**(1/2) for x1, y1, x2, y2 in zip(master_lt, master_ikt, lt, ikt)]
+	dissimilarity = sum(euclideanDistance)
+	comparator = generateComparator()
+	authenticationValue = 1 if dissimilarity <= comparator else 0
+	# print(authenticationValue)
+	user = 'Legitimate' if authenticationValue == 1 else 'Imposter'
+	print(user)
 
-verifyUser()
+def onPress(key):
+	t = datetime.now()
+	if not key == Key.enter:
+		time = t.minute*60*(10**6) + t.second*(10**6) + t.microsecond
+		pressdata.append("p-{0}-{1}".format(key,time))
+
+def onRelease(key):
+	t = datetime.now()
+	if key == Key.enter:
+		return False
+	else:
+		time = t.minute*60*(10**6) + t.second*(10**6) + t.microsecond
+		releasedata.append("r-{0}-{1}".format(key,time))
+
+def userInput():
+	text = 'shashank'
+	print("Type the following text: {0}".format(text))
+	with Listener(on_press=onPress, on_release=onRelease) as listener:
+		listener.join()
+	authenticate()
+
+userInput()

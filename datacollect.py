@@ -9,12 +9,8 @@ dataset = []
 
 def processAndStore(keyPressData, keyReleaseData):
     keyPressData, keyReleaseData = extractTimings(dataProcess(keyPressData), dataProcess(keyReleaseData))
-    # create json file; since this a static model and text is always same
-    # therefore it is not added to the json object
     data = dict(keyPressData=keyPressData, keyReleaseData=keyReleaseData)
-    with open('data.json', 'a') as f:
-        json.dump(data, f) 
-    dataset.append((keyPressData, keyReleaseData))
+    dataset.append(data)
 
 def onPress(key):
     t = datetime.now()
@@ -49,6 +45,11 @@ def dataCollect():
         processAndStore(keyPressData, keyReleaseData)
         keyPressData = []
         keyReleaseData = []
+
+    # create json file; since this a static model and text is always same
+    # therefore it is not added to the json object
+    with open('data.json', 'a') as f:
+        json.dump(dataset, f) 
 
 dataCollect()
 for dataentry in dataset:
